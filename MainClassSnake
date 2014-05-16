@@ -1,0 +1,119 @@
+import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.image.ImageObserver;
+import java.awt.image.ImageProducer;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+
+
+public class Main {
+
+	/**
+	 * Този клас е за прозореца на играта.
+	 */
+	public static void main(String[] args) {
+			
+			 JFrame frame = new JFrame("Snake Game - TEAM DORVAL");		//Създаваме рамката на прозореца с наш надпис
+			 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		//начин за затваряне на прозореца
+			 frame.setResizable(false);   	 // забранява промяна на размера на прозореца
+			
+			 Canvas canvas = new Canvas();  	//създава платното, в което ще се случва всичко
+			 canvas.setBackground(Color.BLACK);		//настройваме го с цвят 
+			 canvas.setPreferredSize(new Dimension(500, 500));		//настройваме размера
+			 
+			 frame.add(canvas);		//свързваме рамката и платното, за получаване на цял прозорец
+			 
+			 frame.pack();
+			 frame.setLocationRelativeTo(null);		// настройва позицията на прозореца да е в центъра на екрана
+			 frame.setVisible(true);			// показване на прозореца
+			 
+			 /**Написан до тук кода, изкарва нов черен прозорец*/
+			 			
+			 Main engine = new Main(canvas);
+			 engine.startGame();		// стартира играта			 
+			 		
+	}
+	
+	/**
+	 * Конструктор за визията на нашата змия :)
+	 */
+	// Илюстрацията, която искаме да "рисуваме" в платното ни
+	private Canvas canvas;
+
+	private Main(Canvas canvas) {
+	 this.canvas = canvas;
+	}
+	
+
+	/**
+	 * Създаваме главния метод за класа- съдържащ цикъла на играта и показващ инфо
+	 */
+	
+	private static final int UPDATES_PER_SECOND = 10;	// Задаваме колко пъти ще се ъпдейтва играта за 1 секунда
+
+
+	// Извличане на инфо и поддържане не цикъла:
+	public void startGame() {
+
+	
+	 canvas.createBufferStrategy(2);		// Създаваме 2 буфера
+	  
+	 /*
+	  * Grab a reference to the graphics object.
+	  */
+	 Graphics2D g = (Graphics2D)canvas.getBufferStrategy().getDrawGraphics();		// Взимаме графиката на платното 
+	  
+	 long start = 0L;		// Пазим цикъла, който изпълнява постоянните кадри
+	 long sleepDuration = 0L;
+	 
+	 while(true) {		// безкраен цикъл, който свърша при приключване на програмата
+
+	  start = System.currentTimeMillis();		// Времето, в коео започва цикъла на играта -сега
+	  
+	  update();		// Ъпдейтваме играта
+	   
+	  render(g);		//
+	  
+	  canvas.getBufferStrategy().show();		// Показваме графиките в/у платното
+
+	   g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());		//Изчистваме екрана, 
+	    													// за да се покаже празен екран при следващо стартиране
+
+	  sleepDuration = (1000L / UPDATES_PER_SECOND) - (System.currentTimeMillis() - start); //Време за което приключва цикъла	   
+	  
+	  /*
+	   * If the sleep duration is greater than 0 milliseconds, attempt to sleep.
+	   */
+	  if(sleepDuration > 0) {	
+	   try {
+	    Thread.sleep(sleepDuration);
+	   } catch(Exception e) {
+	    e.printStackTrace();
+	   }
+	  }
+	 }
+	}
+
+
+	private void update() {			// Ъпдейтва играта
+	 //Empty for now, we'll fill this in later.
+	}
+
+	/*
+	 * Draw the game onto the graphics object.
+	 */
+	private void render(Graphics2D g) {		// За "рисуване" на играта
+	 //Empty for now, we'll fill this in later.
+	}
+	
+
+
+}
+
+
