@@ -1,119 +1,177 @@
+
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
+import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.image.ImageObserver;
-import java.awt.image.ImageProducer;
-
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 
-
-public class Main {
-
-	/**
-	 * Този клас е за прозореца на играта.
-	 */
-	public static void main(String[] args) {
-			
-			 JFrame frame = new JFrame("Snake Game - TEAM DORVAL");		//Създаваме рамката на прозореца с наш надпис
-			 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		//начин за затваряне на прозореца
-			 frame.setResizable(false);   	 // забранява промяна на размера на прозореца
-			
-			 Canvas canvas = new Canvas();  	//създава платното, в което ще се случва всичко
-			 canvas.setBackground(Color.BLACK);		//настройваме го с цвят 
-			 canvas.setPreferredSize(new Dimension(500, 500));		//настройваме размера
-			 
-			 frame.add(canvas);		//свързваме рамката и платното, за получаване на цял прозорец
-			 
-			 frame.pack();
-			 frame.setLocationRelativeTo(null);		// настройва позицията на прозореца да е в центъра на екрана
-			 frame.setVisible(true);			// показване на прозореца
-			 
-			 /**Написан до тук кода, изкарва нов черен прозорец*/
-			 			
-			 Main engine = new Main(canvas);
-			 engine.startGame();		// стартира играта			 
-			 		
-	}
+public class Main extends KeyAdapter {
 	
-	/**
-	 * Конструктор за визията на нашата змия :)
-	 */
-	// Илюстрацията, която искаме да "рисуваме" в платното ни
+	private static int Width = 260;
+	
+	private static int Height = 300;
+	
+	private static int CellSize = 10;
+	
 	private Canvas canvas;
+	
+	private Snake snake;
+	
+	private boolean gameContinue = true;
+	
+	public Main(Canvas canvas) {
+		this.canvas = canvas;
+		snake = new Snake(Width, Height, CellSize);
+		canvas.addKeyListener(this);
+	}
 
-	private Main(Canvas canvas) {
-	 this.canvas = canvas;
+	public static void main(String[] args) {
+		
+		JFrame frame = new JFrame("Snake Game - TEAM DORVAL");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setResizable(false);
+		
+		/*JButton btn = new JButton("Start");     Това е страничен бутон, който може да бъде за старт и пауза
+		frame.add(btn);
+		frame.setLayout(new FlowLayout());*/
+		
+		Canvas canvas = new Canvas();	
+		canvas.setBackground(Color.BLACK);
+		canvas.setPreferredSize(new Dimension(Width, Height));
+
+		frame.add(canvas);
+		frame.pack();
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
+		
+		Main snakeGame = new Main(canvas);
+		snakeGame.startGame();			
 	}
 	
 
-	/**
-	 * Създаваме главния метод за класа- съдържащ цикъла на играта и показващ инфо
-	 */
-	
-	private static final int UPDATES_PER_SECOND = 10;	// Задаваме колко пъти ще се ъпдейтва играта за 1 секунда
-
-
-	// Извличане на инфо и поддържане не цикъла:
 	public void startGame() {
+		
+		Sound music = new Sound();
+		music.start();
+		
+		canvas.createBufferStrategy(2);
 
+		Graphics2D g = (Graphics2D)canvas.getBufferStrategy().getDrawGraphics();
+
+		long start = 0L;
+		long sleepDuration = 0L;
+
+		while(true) {
+			start = System.currentTimeMillis();
+			update();
+			render(g);		//
+			canvas.getBufferStrategy().show();		
+			g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+			sleepDuration = (1000L / Snake.levelSpeed) - (System.currentTimeMillis() - start);
+			
+			if(sleepDuration > 0) {	
+				try {
+					Thread.sleep(sleepDuration);
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private void update() {
+		if (gameContinue) {
+			gameContinue = this.snake.updateSnake(CellSize);
+		}
+	}
+
+	private void render(Graphics2D g) {
+		if (gameContinue) {			
+			g.setColor(Color.YELLOW);
+			if (this.snake.getBonus() != null) {
+				g.fillRect(this.snake.getBonus().getPosition().getX(), 
+						this.snake.getBonus().getPosition().getY(), CellSize/2, CellSize/2);
+			}
+			
+			g.setColor(Color.RED);
+			if (this.snake.getLive() != null) {
+				g.fillOval(this.snake.getLive().getPosition().getX(), 
+						this.snake.getLive().getPosition().getY(), CellSize/2, CellSize/2);
+			}
+		
+			g.setColor(Color.BLUE);
+			for (Point point : this.snake.getSnakePosition()) {
+				g.fillOval(point.getX(), point.getY(), CellSize, CellSize);
+			}
+			
+			// draw gameinfo menu
+			g.setColor(Color.GRAY);	
+			g.drawString("_________________________________________", 0, 280);
+			g.drawString("LIVES:" + Snake.lives, 5, 295);
+			g.drawString("SCORES:" + Snake.scores, 100, 295);
+			g.drawString("LEVEL:" + Snake.levels, 200, 295);
+		
+		} else {
+				g.setColor(Color.RED);
+				g.drawString("GAME OVER!!!", Width/2 -40, Height/3);
+				
+				g.setColor(Color.GREEN);
+				g.drawString("SCORES:" + Snake.savedScores, Width/2 -30, Height/3+25);
+				
+				g.setColor(Color.DARK_GRAY);			
+				g.drawString("PRESS ENTER TO START NEW GAME", 20, Height/2);
+				
+				g.setColor(Color.WHITE);			
+				g.drawString("_________________________________________", 0, Height/2+10);
+				g.setColor(Color.WHITE);			
+				g.drawString("HIGH SCORES", 80, Height/2+25);
+				g.setColor(Color.WHITE);			
+				g.drawString("1st :" + Snake.hightScores1, 110, Height/2+45);
+				g.setColor(Color.WHITE);			
+				g.drawString("2nd:" + Snake.hightScores2, 110, Height/2+60);
+				g.setColor(Color.WHITE);			
+				g.drawString("3th :" + Snake.hightScores3, 110, Height/2+75);
+				
+				//зануляваме точките нивото при край на играта. 
+				Snake.scores = 0;		
+				Snake.levels = 1;
+				Snake.lives = 3;
+				Snake.levelSpeed = 6;
+				this.snake.resetSnake();
+		}	
+	}
 	
-	 canvas.createBufferStrategy(2);		// Създаваме 2 буфера
-	  
-	 /*
-	  * Grab a reference to the graphics object.
-	  */
-	 Graphics2D g = (Graphics2D)canvas.getBufferStrategy().getDrawGraphics();		// Взимаме графиката на платното 
-	  
-	 long start = 0L;		// Пазим цикъла, който изпълнява постоянните кадри
-	 long sleepDuration = 0L;
-	 
-	 while(true) {		// безкраен цикъл, който свърша при приключване на програмата
-
-	  start = System.currentTimeMillis();		// Времето, в коео започва цикъла на играта -сега
-	  
-	  update();		// Ъпдейтваме играта
-	   
-	  render(g);		//
-	  
-	  canvas.getBufferStrategy().show();		// Показваме графиките в/у платното
-
-	   g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());		//Изчистваме екрана, 
-	    													// за да се покаже празен екран при следващо стартиране
-
-	  sleepDuration = (1000L / UPDATES_PER_SECOND) - (System.currentTimeMillis() - start); //Време за което приключва цикъла	   
-	  
-	  /*
-	   * If the sleep duration is greater than 0 milliseconds, attempt to sleep.
-	   */
-	  if(sleepDuration > 0) {	
-	   try {
-	    Thread.sleep(sleepDuration);
-	   } catch(Exception e) {
-	    e.printStackTrace();
-	   }
-	  }
-	 }
+	@Override
+	public void keyPressed(KeyEvent e) {
+		
+		if(e.getKeyCode() == KeyEvent.VK_UP) {
+			this.snake.setDirection(Direction.Up);
+		}
+		if(e.getKeyCode() == KeyEvent.VK_S || e.getKeyCode() == KeyEvent.VK_DOWN) {
+			this.snake.setDirection(Direction.Down);
+		}
+		if(e.getKeyCode() == KeyEvent.VK_A  || e.getKeyCode() == KeyEvent.VK_LEFT) {
+			this.snake.setDirection(Direction.Left);
+		}
+		if(e.getKeyCode() == KeyEvent.VK_D  || e.getKeyCode() == KeyEvent.VK_RIGHT) {
+			this.snake.setDirection(Direction.Right);
+		}
+		if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+			if (!gameContinue) {
+				this.snake.resetSnake();
+				gameContinue = true;
+			}
+		}
 	}
-
-
-	private void update() {			// Ъпдейтва играта
-	 //Empty for now, we'll fill this in later.
-	}
-
-	/*
-	 * Draw the game onto the graphics object.
-	 */
-	private void render(Graphics2D g) {		// За "рисуване" на играта
-	 //Empty for now, we'll fill this in later.
-	}
-	
-
 
 }
+	
+
+	
+
+
 
 
