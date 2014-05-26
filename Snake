@@ -1,0 +1,216 @@
+import java.util.LinkedList;
+
+
+
+public class Snake {
+	private LinkedList<Point> snakePosition = new LinkedList<Point>();
+	
+	private Direction nextDirection;
+	
+	private Direction currentDirection;
+	
+	private int gameboardWidth;
+	
+	private int gameboardHeight;
+	
+	private int gameboardCellSize;
+	
+	private int gameboardMenuHeight = 20;
+	
+	private Bonus bonus;
+	
+	private NewLive live;
+
+	static int lives	    = 3;	// първоначалните животи на змията
+	static int scores 	    = 0;
+	static int savedScores  = 0;
+	static int levels 	    = 1;
+	static int levelSpeed   = 6;
+	static int hightScores1 = 0;
+	static int hightScores2 = 0;
+	static int hightScores3 = 0;
+	
+	public LinkedList<Point> getSnakePosition() {
+		return this.snakePosition;
+	}
+	
+	public void setSnakePosition(LinkedList<Point> snakePosition) {
+		this.snakePosition = snakePosition;
+	}
+	
+	public Snake(int canvasWidth, int canvasHeight, int size) {
+		for (int i = 3; i < 6; i++) {	// Сменяме началната позиция на змията, за да не е в/у точките.
+			snakePosition.add(new Point(0, canvasHeight - (size * i)));
+		}
+		
+		nextDirection = Direction.None;
+		currentDirection = Direction.None;
+		
+		gameboardWidth = canvasWidth;
+		gameboardHeight = canvasHeight - gameboardMenuHeight;
+		gameboardCellSize = size; 
+	}
+		
+	public void resetSnake() {
+		this.snakePosition.clear();
+		for (int i = 1; i < 4; i++) {
+			// generate new snake with length 3 cells and over the game information menu
+			snakePosition.add(new Point(0, this.gameboardHeight - (gameboardCellSize * i)));
+		}
+		
+		nextDirection = Direction.None;
+		currentDirection = Direction.None;
+		bonus = null;
+		live = null;
+	}
+
+	/*
+	 * Change snake direction 
+	 */
+	public void setDirection(Direction direction) {
+		if (length() > 1) {
+			if(direction.equals(Direction.Up) && currentDirection.equals(Direction.Down)) {
+				return;
+			} else if(direction.equals(Direction.Down) && currentDirection.equals(Direction.Up)) {
+				return;
+			} else if(direction.equals(Direction.Left) && currentDirection.equals(Direction.Right)) {
+				return;
+			} else if(direction.equals(Direction.Right) && currentDirection.equals(Direction.Left)) {
+				return;
+			}
+		}
+		
+		nextDirection = direction;
+	}
+	
+	
+	public boolean updateSnake(int size) {
+
+		this.currentDirection = nextDirection;
+		
+		Point snakeHead = this.snakePosition.getLast();
+		Point newSnakeHead = null;
+		if (this.currentDirection == Direction.Up) {
+			newSnakeHead = new Point(snakeHead.getX(), snakeHead.getY() - size);
+			
+		} else if (this.currentDirection == Direction.Down) {
+			newSnakeHead = new Point(snakeHead.getX(), snakeHead.getY() + size);
+
+		} else if (this.currentDirection == Direction.Left) {
+			newSnakeHead = new Point(snakeHead.getX() - size, snakeHead.getY());
+
+		} else if (this.currentDirection == Direction.Right) {
+			newSnakeHead = new Point(snakeHead.getX() + size, snakeHead.getY());
+		}
+		
+		if (newSnakeHead != null) {
+			this.snakePosition.add(newSnakeHead);
+			// snake goes out of game board
+			if (newSnakeHead.getX() < 0 || newSnakeHead.getY() < 0 ||
+				newSnakeHead.getX() > this.gameboardWidth || 
+				newSnakeHead.getY() > this.gameboardHeight - gameboardCellSize ) {
+				// ако при сблъсък, животите стават 0 - Game Over
+				if (lives == 1) {  
+					savedScores = scores;
+					SavedScores();
+					return false;
+				}
+				else {
+					lives--; 	// при блъскане в стената, при наличие на животи, те намаляват
+					resetSnake();  // обновяваме змията след като е загубен живот. Логиката до края на метода в този случай не ни интересува
+					return true;
+				}
+			}
+			
+			// check snake head is over its body
+			Point head = this.snakePosition.getLast();
+			for (int i = 0; i < this.snakePosition.size() - 1; i++) {
+				Point point = this.snakePosition.get(i);
+				if ( head.getX() == point.getX() && head.getY() == point.getY()) {
+					if (lives == 1) {
+						savedScores = scores;					
+						SavedScores();
+						return false;
+					}
+					else {
+						// обновяваме змията след като е загубен живот. Логиката до края на метода в този случай не ни интересува
+						lives --;
+						resetSnake();
+						return true;
+					}
+				}
+			}
+			
+			// check new head position is over bonus cell
+			if (bonus == null) {
+				do {
+					bonus = new Bonus(this.gameboardWidth, this.gameboardHeight - this.gameboardMenuHeight);
+				} while (pointIsOverSnake(this.bonus.getPosition()));
+				
+			}
+			if (live == null) {
+				do {
+					live = new NewLive(this.gameboardWidth, this.gameboardHeight - this.gameboardMenuHeight);
+				} while (pointIsOverSnake(this.live.getPosition()));
+				
+			}
+			if (bonus.isOverBonus(newSnakeHead)) {
+				bonus = null;
+				scores++;		// взимаме точка
+				if (scores%5 == 0) {
+					levels++;		//ново ниво на всеки 5 точки
+					levelSpeed += 3;		// на всяко ниво вдигаме скоростта с 3
+				}
+			}
+			else if (live.isOverNewLive(newSnakeHead)){
+				live = null;
+				lives++;
+			}else {
+				this.snakePosition.removeFirst();
+			}
+		}
+		
+		return true;
+	}
+	 
+	/*
+	 * Check point from Bonus or NewLive is over snake
+	 */
+	private boolean pointIsOverSnake(Point position) {
+		for (Point snakePoint : this.snakePosition) {
+			if (snakePoint.getX() == position.getX() && snakePoint.getY() == position.getY()) {
+				System.out.println("Symbol is over snake");
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void SavedScores() {
+		if (hightScores1 <= savedScores) {
+			hightScores3 = hightScores2;
+			hightScores2 = hightScores1;
+			hightScores1 = savedScores;
+		}
+		else if ((hightScores1 > savedScores) && (hightScores2 <= savedScores)) {
+			hightScores3 = hightScores2;
+			hightScores2 = savedScores;
+		}
+		else if ((hightScores2 > savedScores) && (hightScores3 <= savedScores)){
+			hightScores3 = savedScores;
+		}
+	}
+
+	public int length() {
+		return this.snakePosition.size();
+	}
+	
+	public Bonus getBonus() {
+		return this.bonus;
+	}
+	
+	public NewLive getLive(){
+		return this.live;
+	}
+	
+}
