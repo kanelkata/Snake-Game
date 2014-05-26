@@ -1,0 +1,54 @@
+import java.util.ArrayList;
+import java.util.Random;
+
+
+public class NewLive {
+
+private Point position;
+	
+	public Point getPosition() {
+		return this.position;
+	}
+	
+	public void setPosition(Point position) {
+		this.position = position;
+	}
+	
+	private static ArrayList<Integer> widthCoor;
+	
+	private static ArrayList<Integer> heightCoor;
+	
+	
+	public NewLive(int gameboardWidth, int gameboardHeight) {
+		int step = 10;
+		
+		if (widthCoor == null) {
+			widthCoor = new ArrayList<Integer>();
+			for (int i = 0; i < gameboardWidth; i+=step) {
+				widthCoor.add(i);
+			}
+		}
+
+		if (heightCoor == null) {
+			heightCoor = new ArrayList<Integer>();
+			for (int i = 0; i < gameboardHeight; i+=step) {
+				heightCoor.add(i);
+			}
+		}
+		
+		Random randomGenerator = new Random();
+		position = new Point(widthCoor.get(randomGenerator.nextInt(widthCoor.size())), 
+				heightCoor.get(randomGenerator.nextInt(heightCoor.size())));
+	}
+	
+	
+	public boolean isOverNewLive(Point point) {
+		//System.out.println(this.position.getX() + " " + this.position.getY() + " " + point.getX() + " " +  + point.getY());
+
+		if(this.position.getX() == point.getX() && this.position.getY() == point.getY()) {
+			return true;
+		}
+		return false;
+	}
+}
+
