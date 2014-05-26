@@ -129,11 +129,11 @@ public class Main extends KeyAdapter {
 				g.setColor(Color.WHITE);			
 				g.drawString("HIGH SCORES", 80, Height/2+25);
 				g.setColor(Color.WHITE);			
-				g.drawString("1st :" + Snake.hightScores1, 110, Height/2+45);
+				g.drawString("1st :" + Snake.highScores1, 110, Height/2+45);
 				g.setColor(Color.WHITE);			
-				g.drawString("2nd:" + Snake.hightScores2, 110, Height/2+60);
+				g.drawString("2nd:" + Snake.highScores2, 110, Height/2+60);
 				g.setColor(Color.WHITE);			
-				g.drawString("3th :" + Snake.hightScores3, 110, Height/2+75);
+				g.drawString("3th :" + Snake.highScores3, 110, Height/2+75);
 				
 				//зануляваме точките нивото при край на играта. 
 				Snake.scores = 0;		
