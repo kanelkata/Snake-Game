@@ -54,8 +54,8 @@ public class Main extends KeyAdapter {
 
 	public void startGame() {
 		
-		Sound music = new Sound();
-		music.start();
+		//Sound music = new Sound();
+		//music.start();
 		
 		canvas.createBufferStrategy(2);
 
