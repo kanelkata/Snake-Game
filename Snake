@@ -26,9 +26,9 @@ public class Snake {
 	static int savedScores  = 0;
 	static int levels 	    = 1;
 	static int levelSpeed   = 6;
-	static int hightScores1 = 0;
-	static int hightScores2 = 0;
-	static int hightScores3 = 0;
+	static int highScores1 = 0;
+	static int highScores2 = 0;
+	static int highScores3 = 0;
 	
 	public LinkedList<Point> getSnakePosition() {
 		return this.snakePosition;
@@ -187,17 +187,17 @@ public class Snake {
 	}
 
 	public void SavedScores() {
-		if (hightScores1 <= savedScores) {
-			hightScores3 = hightScores2;
-			hightScores2 = hightScores1;
-			hightScores1 = savedScores;
+		if (highScores1 <= savedScores) {
+			highScores3 = highScores2;
+			highScores2 = highScores1;
+			highScores1 = savedScores;
 		}
-		else if ((hightScores1 > savedScores) && (hightScores2 <= savedScores)) {
-			hightScores3 = hightScores2;
-			hightScores2 = savedScores;
+		else if ((highScores1 > savedScores) && (highScores2 <= savedScores)) {
+			highScores3 = highScores2;
+			highScores2 = savedScores;
 		}
-		else if ((hightScores2 > savedScores) && (hightScores3 <= savedScores)){
-			hightScores3 = savedScores;
+		else if ((highScores2 > savedScores) && (highScores3 <= savedScores)){
+			highScores3 = savedScores;
 		}
 	}
 
